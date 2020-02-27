@@ -1,6 +1,7 @@
 var express 	= require('express');
 var router 		= express.Router();
 var userModel   = require.main.require('./models/user-model');
+var bookModel   = require.main.require('./models/book-model');
 
 router.get('*', function(req, res, next){
 	if(req.cookies['username'] == null){
@@ -29,6 +30,7 @@ router.get('/alluser', function(req, res){
 		}
 	});
 })
+
 
 
 router.get('/edit/:id', function(req, res){
@@ -75,5 +77,41 @@ router.post('/delete/:id', function(req, res){
 	});
 })
 
+router.get('/view_books', function(req, res){
+	bookModel.getAllBooks(function(results){
+		if(results.length > 0){
+			res.render('home/view_books', {booklist: results});
+		}else{
+			res.send('invalid database connection');
+		}
+	});
+})
+
+router.get('/update/:id', function(req, res){
+	
+	bookModel.getById(req.params.id, function(result){
+		res.render('home/update', {book: result});
+	});
+})
+
+router.post('/update/:id', function(req, res){
+	
+	var book = {
+		name: req.body.name,
+		category: req.body.category,
+		author_name: req.body.author_name,
+		price: req.body.price,
+		discription: req.body.discription,
+		id: req.params.id
+	};
+
+	bookModel.update(book, function(status){
+		if(status){
+			res.redirect('/home/view_books');
+		}else{
+			res.redirect('/home/update/'+req.params.id);
+		}
+	});
+})
 module.exports = router;
 
